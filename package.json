@@ -1,0 +1,24 @@
+{
+    "name": "google-hash-code-2022",
+    "version": "1.0.0",
+    "description": "",
+    "main": "day1.js",
+    "type": "module",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ludoo0d0a/GoogleHashCode2022.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+      "url": "https://github.com/ludoo0d0a/GoogleHashCode2022/issues"
+    },
+    "homepage": "https://github.com/ludoo0d0a/GoogleHashCode2022#readme",
+    "dependencies": {
+      "console.table": "^0.10.0",
+      "mathjs": "^6.6.0"
+    }
+  }
