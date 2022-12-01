@@ -13,8 +13,8 @@ lines.map(line => {
 })
 
 groups.sort((a,b)=> {
-    return a && b && a.weight > b.weight;
+    return (a && b && a.weight < b.weight) ? 1 : -1;
 })
 
 log("Heaviest elf carry ", groups[0].weight);
-log("Opposite elf carry ", groups[sortedGroups.length -1].weight);
+log("Opposite elf carry ", groups[groups.length -1].weight);
