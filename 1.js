@@ -1,4 +1,5 @@
 import { readFile, log } from './io.js';
+// import * as io from './io.js';
 
 var lines = readFile('1.txt')
 var groups = [];
