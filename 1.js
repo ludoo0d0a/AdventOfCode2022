@@ -18,3 +18,5 @@ groups.sort((a,b)=> {
 
 log("Heaviest elf carry ", groups[0].weight);
 log("Opposite elf carry ", groups[groups.length -1].weight);
+
+log("Top 3 ", groups[0].weight+groups[1].weight+groups[2].weight);
