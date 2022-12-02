@@ -1,12 +1,11 @@
 import fs from 'fs';
-import { loadavg } from 'os';
+import log from 'loglevel';
+
 
 export function loga(m, ...args){
     process.stdout.write(m, args);
 }
-export function log(m, ...args){
-    console.log(m, args);
-}
+
 export function saveAsjson(name, o){
     fs.writeFileSync('out/'+name, JSON.stringify(o))
 }
@@ -31,4 +30,9 @@ export function readFile(name){
     var content = fs.readFileSync('data/'+name, 'utf8');
     var lines = content.split('\n');
     return lines;
+}
+
+export function stop(){
+    console.log('Stop !!')
+    process.exit();
 }

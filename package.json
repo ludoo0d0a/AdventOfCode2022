@@ -20,6 +20,7 @@
   "homepage": "https://github.com/ludoo0d0a/GoogleHashCode2022#readme",
   "dependencies": {
     "console.table": "^0.10.0",
-    "mathjs": "^6.6.0"
+    "loglevel": "^1.8.1",
+    "mathjs": "^6.6.0"    
   }
 }
