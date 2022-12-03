@@ -2,7 +2,7 @@ import { readFile, stop, sliceIntoChunks, filteredArray } from './io.js';
 import log from 'loglevel';
 
 const DEBUG = true;
-const DAY = 0;
+const DAY = 4;
 const LIMIT = 5;
 
 log.setDefaultLevel(DEBUG?'debug':'info')

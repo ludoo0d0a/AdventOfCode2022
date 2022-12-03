@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Run current",
-            "program": "${workspaceFolder}/${file}",
+            "program": "${file}",
             "cwd": "${workspaceFolder}",
             "request": "launch",
             "skipFiles": [
@@ -22,7 +22,7 @@
                 "<node_internals>/**"
             ],
             "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/3.js",
+            "program": "${workspaceFolder}/4.js",
             //"console": "internalConsole",
             //"console": "integratedTerminal",
             //"outputCapture": "std"
