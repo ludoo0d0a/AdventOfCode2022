@@ -5,37 +5,48 @@ log.setDefaultLevel('debug')
 //log.setDefaultLevel('info')
 
 // https://adventofcode.com/2022/day/3
-log.info('Day 3 - star 1')
+log.info('Day 3 - star 2')
 
 var lines = readFile('3.txt')
 
 var groups = [];
 var total = 0;
-var group = {};
-groups.push(group)
 
-//lines=lines.slice(0, 5)
+//lines=lines.slice(0, 3 * 5)
 
 lines.map(line => {
     if (!line) return;
     let values = line.split('')
-    let groupedValues = sliceIntoChunks(values, values.length/2)
-    group = {
-        pack1: groupedValues[0], 
-        pack2: groupedValues[1]  
-        //score: 0
+    let group = {
+        line,
+        pack: values  
     };
-    total +=process(group, line)
     groups.push(group)
+})
+
+let groupedValues = sliceIntoChunks(groups, 3)
+groupedValues.map(group => {
+    total += process({commons:null, group})
 })
 
 log.info('total = ', total);
 
-function process(group, line){
-    const r = filteredArray(group.pack1, group.pack2)
-    const score = computeScore(r)
-    log.debug('%s > %d', line, score, r[0])
+function process(r){
+    processGroup(r);
+    const score = computeScore(r.commons)
+    log.debug('> %d', score, r.commons)
     return score;
+}
+
+function processGroup(r){
+    r.group.map(grp => {
+        if (!grp.line) return;
+        if (r.commons){
+            r.commons = filteredArray(grp.pack, r.commons)
+        }else{
+            r.commons= grp.pack
+        }
+    });
 }
 
 function computeScore(r){
