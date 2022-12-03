@@ -36,3 +36,17 @@ export function stop(){
     console.log('Stop !!')
     process.exit();
 }
+
+
+export function sliceIntoChunks(arr, chunkSize) {
+    const res = [];
+    for (let i = 0; i < arr.length; i += chunkSize) {
+        const chunk = arr.slice(i, i + chunkSize);
+        res.push(chunk);
+    }
+    return res;
+}
+
+export function filteredArray(array1, array2) {
+    return array1.filter(value => array2.includes(value));
+}

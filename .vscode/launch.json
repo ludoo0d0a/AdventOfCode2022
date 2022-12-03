@@ -17,22 +17,12 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "run 1",
+            "name": "run",
             "skipFiles": [
                 "<node_internals>/**"
             ],
             "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/1.js"
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "run 2",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/2.js",
+            "program": "${workspaceFolder}/3.js",
             //"console": "internalConsole",
             //"console": "integratedTerminal",
             //"outputCapture": "std"
