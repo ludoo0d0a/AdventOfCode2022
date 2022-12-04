@@ -1,7 +1,7 @@
 import { readFile, stop, sliceIntoChunks, filteredArray } from './io.js';
 import log from 'loglevel';
 
-const DEBUG = true;
+const DEBUG = false;
 const DAY = 4;
 const LIMIT = 5;
 
@@ -23,10 +23,10 @@ if (DEBUG && LIMIT>0){
 
 lines.map(line => {
     if (!line) return;
-    let values = line.split(' ')
+    let values = line.split(',') //46-75,45-76
     group = {
-        res: values[0], 
-        req: values[1]  
+        range1: values[0].split('-').map(i => +i), 
+        range2: values[1].split('-').map(i => +i)
         //score: 0
     };
     total += process(group, line)
@@ -35,13 +35,15 @@ lines.map(line => {
 
 log.info('total = ', total);
 
-
 function process(group, line){
-
-    const score = 0;
-
-    //TODO
-
+    const includes = includesAll(group.range1, group.range2) ||
+                     includesAll(group.range2, group.range1);
+    const score = includes ? 1 : 0;
     log.debug('%s > %d', line,  score)
     return score;
+}
+
+// 2-3,1-9 = 2-3 = true
+function includesAll(r1, r2){
+    return (r1[0]>=r2[0] && r1[1]<=r2[1]);
 }
