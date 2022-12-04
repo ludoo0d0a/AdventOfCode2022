@@ -3,7 +3,7 @@ import log from 'loglevel';
 
 const DEBUG = false;
 const DAY = 4;
-const LIMIT = 5;
+const LIMIT = 15;
 
 log.setDefaultLevel(DEBUG?'debug':'info')
 
@@ -36,8 +36,8 @@ lines.map(line => {
 log.info('total = ', total);
 
 function process(group, line){
-    const includes = includesAll(group.range1, group.range2) ||
-                     includesAll(group.range2, group.range1);
+    const includes = overlap(group.range1, group.range2) ||
+                    overlap(group.range2, group.range1);
     const score = includes ? 1 : 0;
     log.debug('%s > %d', line,  score)
     return score;
@@ -46,4 +46,13 @@ function process(group, line){
 // 2-3,1-9 = 2-3 = true
 function includesAll(r1, r2){
     return (r1[0]>=r2[0] && r1[1]<=r2[1]);
+}
+
+// 5-7,7-9 => 7
+// 5-7,8-9 => -
+// 5-9,7-8 => 7-8
+function overlap(x, y){
+    return ( x[0]<=y[0] &&  y[0]<=x[1] )
+        || 
+        ( x[0]<=y[1] &&  y[1]<=x[1] );
 }
