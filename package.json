@@ -21,6 +21,8 @@
   "dependencies": {
     "console.table": "^0.10.0",
     "loglevel": "^1.8.1",
-    "mathjs": "^6.6.0"    
+    "mathjs": "^6.6.0",
+    "node-fetch": "^3.3.0",
+    "yargs": "^17.6.2"
   }
 }
