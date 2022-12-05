@@ -1,6 +1,15 @@
 import fs from 'fs';
 import log from 'loglevel';
 
+Array.prototype.peek = function (soft) {
+    if (this.length === 0) {
+      if (soft) 
+        return ''
+      else
+        throw new Error("out of bounds");
+    }
+    return this[this.length - 1];
+};
 
 export function loga(m, ...args){
     process.stdout.write(m, args);
@@ -47,6 +56,11 @@ export function sliceIntoChunks(arr, chunkSize) {
     return res;
 }
 
-export function filteredArray(array1, array2) {
+export function intersect(array1, array2) {
     return array1.filter(value => array2.includes(value));
+}
+//export filteredArray=intersect;
+
+export function transpose(array) {
+    return array[0].map((_, colIndex) => array.map(row => row[colIndex]));
 }
