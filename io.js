@@ -64,3 +64,7 @@ export function intersect(array1, array2) {
 export function transpose(array) {
     return array[0].map((_, colIndex) => array.map(row => row[colIndex]));
 }
+
+export function hasDuplicates(array) {
+    return (new Set(array)).size !== array.length;
+}
