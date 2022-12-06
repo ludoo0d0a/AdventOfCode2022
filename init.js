@@ -29,6 +29,7 @@ const argv = yargs(hideBin(process.argv))
     if (argv.verbose) console.info(`init on day: ${argv.day}`)
     getInput(argv.day)
     getExample(argv.day)
+    getCode(argv.day)
     console.info(`Day ${argv.day} is prepared !`)
   })
   .command('submit [answer]', 'Submit answer', (yargs) => {
@@ -63,13 +64,30 @@ const argv = yargs(hideBin(process.argv))
   .alias('help', 'h')
   .parse();
 
-async function getInput(day){
+  async function getInput(day){
     const req = await fetch(`https://adventofcode.com/${YEAR}/day/${day}/input`, {
             method: 'get',
             headers: {'cookie': `session=${AOC_COOKIE}` }
     });
     fs.writeFileSync(`data/${day}.txt`, await req.text())   
 }    
+
+async function getCode(day){
+  const file = `${day}.js`;
+  fs.copyFileSync('_sample.js', file) 
+  // 
+  fs.readFile(file, 'utf-8', (err, contents) => {
+    const replaced = contents.replace('const DAY = 0;', `const DAY = ${day};`);
+    fs.writeFile(file, replaced, 'utf-8', function (err) {
+      if (err) {
+        console.log(err);
+      }else{
+        console.info(`Code prepared: ${file}`);
+      }
+    });
+  })  
+}    
+
 
 async function getExample(day, offset){
     if (!offset) offset=0;
