@@ -16,7 +16,7 @@ var lines = readFile(`${DAY}.txt`)
 // lines = ['nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg'] //: first marker after character 10
 // lines = ['zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw'] //: first marker after character 11
 
-const LEN = 4;
+const LEN = 14;
 var groups = [];
 var total = 0;
 var group = {};
