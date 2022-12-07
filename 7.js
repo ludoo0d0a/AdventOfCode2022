@@ -5,6 +5,9 @@ const DEBUG = false;
 const DAY = 7;
 const LIMIT = 30;
 
+const AVAILABLE = 70000000;
+const TODELETE = 30000000;
+
 log.setDefaultLevel(DEBUG?'debug':'info')
 
 log.info(`Day ${DAY} - star 1`)
@@ -65,6 +68,24 @@ let path='/';
 let size=computeSize(fs.dirs[0], 0, path)
 log.info('size', size)
 
+const root = fs.dirs[0];
+console.info('ROOT= %d', root.size, root)
+// 48729145
+const free = AVAILABLE - root.size; 
+const toDelete = TODELETE - free
+console.info('free= %d', free)
+console.info('toDeleted= %d', toDelete)
+
+const r = results
+.map(dir => dir.size)
+.filter(size => size >= toDelete)
+.sort((a,b) => {
+    return (a==b)?0:((a<b) ? -1 : 1);
+});
+
+console.log(r);
+console.info('RESULT= ', r[0])
+
 function computeSize(dir, size, path){
     dir.filesSize = dir.files.reduce((v, f) => v + f.size ,0)
     if (dir.filesSize>0)
@@ -79,9 +100,9 @@ function computeSize(dir, size, path){
         console.log(' %s --> DIR size:', path, dirSize)
 
     dir.size = dir.filesSize + dir.dirSize;
-    if (dir.size>0 && dir.size<100000){
+    if (dir.size>0 /*&& dir.size<100000*/){
         results.push(dir);
-        total+=dir.size
+        //total+=dir.size
         console.log('### %s dirsize: %s', path, dir.size)
     }
 
