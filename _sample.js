@@ -1,4 +1,4 @@
-import { readFile, stop, sliceIntoChunks, filteredArray } from './io.js';
+import { readFile, stop, sliceIntoChunks, hasDuplicates } from './io.js';
 import log from 'loglevel';
 
 const DEBUG = true;

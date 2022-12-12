@@ -73,6 +73,35 @@ export function isNumeric(str) {
     if (typeof str != "string") return false // we only process strings!  
     return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
            !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
-  }
+}
+
+export function matrixArray(width, height, defaultValue){
+    return Array(height).fill(null).map(()=>Array(width).fill(defaultValue))
+}
+
+function formatEl(el, defaultValue='x'){
+    return (el===null || el<0 || el===false) ? defaultValue : el;
+}
+export function printArray(arr, defaultValue='.'){
+    const text = arr.map(row => {
+        const line = row.map(el => {
+            return formatEl(el, defaultValue);
+        }).join('')
+        return line;
+    }).join('\n')
+    log.info(text);
+}
+
+export function printDoubleArray(arr, arr2, defaultValue='.'){
+    const text = arr.map((row, i) => {
+        const line = row.map((el, j) => {
+            return formatEl(el, defaultValue) + 
+            '(' + formatEl(arr2[i][j], defaultValue) + ')'
+            ;
+        }).join('')
+        return line;
+    }).join('\n')
+    log.info(text);
+}
 
 
