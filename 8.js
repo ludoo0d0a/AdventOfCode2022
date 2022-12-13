@@ -1,7 +1,7 @@
 import { readFile, matrixArray, printArray, printDoubleArray } from './io.js';
 import log from 'loglevel';
 
-const DEBUG = true;
+const DEBUG = false;
 const DAY = 8;
 const LIMIT = 5;
 
@@ -9,7 +9,7 @@ log.setDefaultLevel(DEBUG?'debug':'info')
 
 log.info(`Day ${DAY} - star 1`)
 
-var lines = readFile(`${DAY}b.txt`)
+var lines = readFile(`${DAY}.txt`)
 
 var total = 0;
 var matrix = [];
@@ -32,15 +32,16 @@ lines.map(line => {
     matrix.push(values)
     //total += process(group, line)
 })
-const gh = matrix.length
-const gw = matrix[0].length
+const rows = matrix.length
+const cols = matrix[0].length
+log.info('Matrix %dx%d : rows=%d, cols=%d', cols, rows, rows, cols)
 createVisibility()
 parseMatrix()
 
 function parseMatrix(){
-    for (let row = 0; row < matrix.length; ++row) {
+    for (let row = 0; row < rows; ++row) {
         const line = matrix[row];
-        for (let col = 0; col < line.length; ++col) {
+        for (let col = 0; col < cols; ++col) {
             isVisible(row,col);
         }
         log.debug('Next row')
@@ -49,43 +50,47 @@ function parseMatrix(){
 
 function createVisibility(){
     //empty visibility matrix to retain last height on the direction
-    visibilityDirs[DIR_RIGHT]=Array(gw).fill(-1);  // ->
-    visibilityDirs[DIR_LEFT]=Array(gw).fill(-1);  // <-
-    visibilityDirs[DIR_TOP]=Array(gh).fill(-1);  // ^
-    visibilityDirs[DIR_BOTTOM]=Array(gh).fill(-1);  // v
+    visibilityDirs[DIR_RIGHT]=Array(cols).fill(-1);  // ->
+    visibilityDirs[DIR_LEFT]=Array(cols).fill(-1);  // <-
+    visibilityDirs[DIR_TOP]=Array(rows).fill(-1);  // ^
+    visibilityDirs[DIR_BOTTOM]=Array(rows).fill(-1);  // v
 
-    visibility = matrixArray(gw, gh, false)
+    visibility = matrixArray(cols, rows, false)
 }
 
 function isVisible(row,col){
     log.debug(' ');
-    log.debug('@[%d,%d] =>', row, col)
+    const h = +matrix[row][col];
+    log.debug('@[%d,%d] = %d =>', row, col, h)
     //const filter = [ 'left', 'right' ];
-    const filter = [ 'left', 'top', '_bottom' ];
-    const v1 = (filter.includes('right')) && checkTree(row       ,col      ,DIR_RIGHT,  row) // ->
-    const v2 = (filter.includes('left')) && checkTree(row        ,gh-col   ,DIR_LEFT,   row)  // <-
-    const v3 = (filter.includes('top')) && checkTree(gw-row-1    ,col      ,DIR_TOP,    col)  // ^
-    const v4 = (filter.includes('bottom')) && checkTree(row      ,col      ,DIR_BOTTOM, col)  // v
+    const filter = [ 'left', 'top', 'bottom' , 'right' ];
+    const rc = {row, col};
+    const v1 = (filter.includes('right')) && checkTree(row       ,col      ,DIR_RIGHT,  row, rc) // ->
+    const v2 = (filter.includes('left')) && checkTree(row        ,cols-col-1   ,DIR_LEFT,   row, rc)  // <-
+    const v3 = (filter.includes('top')) && checkTree(rows-row-1    ,col      ,DIR_TOP,    col, rc)  // ^
+    const v4 = (filter.includes('bottom')) && checkTree(row      ,col      ,DIR_BOTTOM, col, rc)  // v
     return (v1 || v2 || v3 || v4);
 }
 
-function checkTree(row, col, dir, vIndex){
+function checkTree(row, col, dir, vIndex, rc){
     // left [3,3] -1 > 4
-    log.debug('  %s [%d,%d] ...', getDir(dir), row, col)
     const h = +matrix[row][col];
     const lastHeight = visibilityDirs[dir][vIndex]
+    log.debug('___%s [%d,%d] %d > %d ...', getDir(dir), row, col, lastHeight, h)
     if (h>lastHeight){
         // visible from this side
-        if (!visibility[row][col]){
-            log.info('%s [%d,%d] %d > %d', getDir(dir), row, col, lastHeight, h)
+        
+        log.debug('%s [%d,%d] %d > %d', getDir(dir), row, col, lastHeight, h)
+        if (visibility[row][col]===false){
             ++total;
-            visibility[row][col]=h;
-            if (DEBUG){
-                printArray(visibility)
-                //printDoubleArray(matrix, visibility)
-            }
-            visibilityDirs[dir][vIndex]=h;
         }
+        visibility[row][col]=h;
+        if (DEBUG){
+            printArray(visibility)
+            //printDoubleArray(matrix, visibility)
+        }
+        visibilityDirs[dir][vIndex]=h;
+        
         return true;
     }
     return false;

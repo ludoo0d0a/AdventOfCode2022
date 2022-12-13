@@ -11,6 +11,9 @@
 35390
 total: 21
 
+
+---- per direction: ??
+
 to right: total =  11
 3..7.
 25...
