@@ -38,10 +38,10 @@ createVisibility()
 parseMatrix()
 
 function parseMatrix(){
-    for (let i = 0; i < matrix.length; ++i) {
-        const row = matrix[i];
-        for (let j = 0; j < row.length; ++j) {
-            isVisible(i,j);
+    for (let row = 0; row < matrix.length; ++row) {
+        const line = matrix[row];
+        for (let col = 0; col < line.length; ++col) {
+            isVisible(row,col);
         }
         log.debug('Next row')
     }
@@ -51,35 +51,35 @@ function createVisibility(){
     //empty visibility matrix to retain last height on the direction
     visibilityDirs[DIR_RIGHT]=Array(gw).fill(-1);  // ->
     visibilityDirs[DIR_LEFT]=Array(gw).fill(-1);  // <-
-    visibilityDirs[DIR_TOP]=Array(gh).fill(-1);  // | to top
-    visibilityDirs[DIR_BOTTOM]=Array(gh).fill(-1);  // | to bottom
+    visibilityDirs[DIR_TOP]=Array(gh).fill(-1);  // ^
+    visibilityDirs[DIR_BOTTOM]=Array(gh).fill(-1);  // v
 
     visibility = matrixArray(gw, gh, false)
 }
 
-function isVisible(i,j){
+function isVisible(row,col){
     log.debug(' ');
-    log.debug('@[%d,%d] =>', i, j)
+    log.debug('@[%d,%d] =>', row, col)
     //const filter = [ 'left', 'right' ];
     const filter = [ 'left', 'top', '_bottom' ];
-    const v1 = (filter.includes('right')) && checkTree(i       ,j      ,DIR_RIGHT, i) // ->
-    const v2 = (filter.includes('left')) && checkTree(i       ,gh-j   ,DIR_LEFT, i)  // <-
-    const v3 = (filter.includes('top')) && checkTree(gw-i-1    ,j      ,DIR_TOP, j)  // to top
-    const v4 = (filter.includes('bottom')) && checkTree(i       ,j      ,DIR_BOTTOM, j)  // to bottom
+    const v1 = (filter.includes('right')) && checkTree(row       ,col      ,DIR_RIGHT,  row) // ->
+    const v2 = (filter.includes('left')) && checkTree(row        ,gh-col   ,DIR_LEFT,   row)  // <-
+    const v3 = (filter.includes('top')) && checkTree(gw-row-1    ,col      ,DIR_TOP,    col)  // ^
+    const v4 = (filter.includes('bottom')) && checkTree(row      ,col      ,DIR_BOTTOM, col)  // v
     return (v1 || v2 || v3 || v4);
 }
 
-function checkTree(i,j, dir, vIndex){
+function checkTree(row, col, dir, vIndex){
     // left [3,3] -1 > 4
-    log.debug('  %s [%d,%d] ...', getDir(dir), i, j)
-    const h = +matrix[i][j];
+    log.debug('  %s [%d,%d] ...', getDir(dir), row, col)
+    const h = +matrix[row][col];
     const lastHeight = visibilityDirs[dir][vIndex]
     if (h>lastHeight){
         // visible from this side
-        if (!visibility[i][j]){
-            log.info('%s [%d,%d] %d > %d', getDir(dir), i, j, lastHeight, h)
+        if (!visibility[row][col]){
+            log.info('%s [%d,%d] %d > %d', getDir(dir), row, col, lastHeight, h)
             ++total;
-            visibility[i][j]=h;
+            visibility[row][col]=h;
             if (DEBUG){
                 printArray(visibility)
                 //printDoubleArray(matrix, visibility)
