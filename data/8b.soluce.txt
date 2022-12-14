@@ -1,3 +1,10 @@
+30373
+25512
+65332
+33549
+35390
+
+
 3x0x3x7x3x
 2x5x5x1_2x
 6x5x3_3x2x
@@ -10,34 +17,18 @@
 3.5.9
 35390
 total: 21
+--- dqy 2
 
+ 3 0 3  7 3
+ 2 5>5  1 2
+ 6 5>3  3 2
+>3>3(5)>4>9
+ 3 5>3  9 0
 
----- per direction: ??
+@3,2 (row3, col2) v=5 max = 
 
-to right: total =  11
-3..7.
-25...
-6....
-3.5.9
-35.9.
-
-to left: total =  10
-...73
-..5.2
-.5.32
-....9
-...90
-
-to top: total =  8
-.....
-.....
-6....
-..5.9
-35390
-
-to bottom: total =  10
-30373
-.55..
-6....
-....9
-...9.
+Looking up, its view is blocked at 2 trees (by another tree with a height of 5).
+Looking left, its view is not blocked; it can see 2 trees.
+Looking down, its view is also not blocked; it can see 1 tree.
+Looking right, its view is blocked at 2 trees (by a massive tree of height 9).
+This tree's scenic score is 8 (2 * 2 * 1 * 2)
