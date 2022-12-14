@@ -64,15 +64,14 @@ function isVisible(row,col){
     log.debug('@[%d,%d] = %d =>', row, col, h)
     //const filter = [ 'left', 'right' ];
     const filter = [ 'left', 'top', 'bottom' , 'right' ];
-    const rc = {row, col};
-    const v1 = (filter.includes('right')) && checkTree(row       ,col      ,DIR_RIGHT,  row, rc) // ->
-    const v2 = (filter.includes('left')) && checkTree(row        ,cols-col-1   ,DIR_LEFT,   row, rc)  // <-
-    const v3 = (filter.includes('top')) && checkTree(rows-row-1    ,col      ,DIR_TOP,    col, rc)  // ^
-    const v4 = (filter.includes('bottom')) && checkTree(row      ,col      ,DIR_BOTTOM, col, rc)  // v
+    const v1 = (filter.includes('right')) && checkTree(row       ,col          ,DIR_RIGHT,  row) // ->
+    const v2 = (filter.includes('left')) && checkTree(row        ,cols-col-1   ,DIR_LEFT,   row)  // <-
+    const v3 = (filter.includes('top')) && checkTree(rows-row-1  ,col          ,DIR_TOP,    col)  // ^
+    const v4 = (filter.includes('bottom')) && checkTree(row      ,col          ,DIR_BOTTOM, col)  // v
     return (v1 || v2 || v3 || v4);
 }
 
-function checkTree(row, col, dir, vIndex, rc){
+function checkTree(row, col, dir, vIndex){
     // left [3,3] -1 > 4
     const h = +matrix[row][col];
     const lastHeight = visibilityDirs[dir][vIndex]
