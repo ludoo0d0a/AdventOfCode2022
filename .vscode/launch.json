@@ -9,6 +9,7 @@
             "program": "${file}",
             "cwd": "${workspaceFolder}",
             "request": "launch",
+            "args": ["--max-old-space-size=4096"],
             "skipFiles": [
                 "<node_internals>/**"
             ],

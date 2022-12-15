@@ -1,10 +1,12 @@
 import { readFile, stop, matrixArray, printArray } from './io.js';
 import log from 'loglevel';
 
-const DEBUG = false;
+const DEBUG = true;
 const SAMPLE = true;
 const DAY = 15;
-const LIMIT = 1;
+const LIMIT = 100;
+const EXTRA = 20;
+const TARGET= SAMPLE ? 10 : 2000000
 
 log.setDefaultLevel(DEBUG?'debug':'info')
 
@@ -23,7 +25,7 @@ if (DEBUG && LIMIT>0){
     lines=lines.slice(0, LIMIT)
 }
 
-lines.map(line => {
+lines.map((line,i) => {
     if (!line) return;
     // Sensor at x=2, y=18: closest beacon is at x=-2, y=15
     let values = line.split(' ')
@@ -36,6 +38,7 @@ lines.map(line => {
         y: +(values[9].replace('y=', ''))    
     };
     const group = {
+        i,
         sensor: s,
         beacon: b
     };
@@ -52,93 +55,61 @@ lines.map(line => {
     groups.push(group)
 })
 
-log.info('total = ', total);
+log.info('%d sensors', groups.length);
 
 log.info(`cols=${rows}, rows=${rows}`);
 log.info(`startCols=${startCols}, startRows=${startRows}`);
-const offset = {
-    x: Math.abs(startCols)+20,
-    y: Math.abs(startRows)+20
-}
-cols+=20
-rows+=20
-const grid = matrixArray(cols+offset.x+1, rows+offset.y+1, false)
 
-function putGrid(x,y, value){
-    if (y+offset.y < 0){
-        log.error('Out of bounds Y <0');
-        return;
-    }
-    if (y+offset.y >= grid.length){
-        log.error('Out of bounds Y');
-        return;
-    }
-    if (x+offset.x < 0){
-        log.error('Out of bounds X <0');
-        return;
-    }
-    if (x+offset.x >= grid[y+offset.y].length){
-        log.error('Out of bounds X');
-        return;
-    }
-    const v = grid[y+offset.y][x+offset.x];
-    if (v===false){
-        grid[y+offset.y][x+offset.x]=value;
+const offset = {
+    x: Math.abs(startCols)+EXTRA,
+    y: Math.abs(startRows)+EXTRA
+}
+cols+=EXTRA
+rows+=EXTRA
+
+const targetLines = Array(rows+offset.x);
+
+function getManhattanDistance(a, b){
+    return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+function putGrid(x, value){
+    targetLines[x + offset.x]=value;
+}
+function isCrossedLine(s, b){
+    // TARGET
+    return ((s.y >= TARGET && b.y <= TARGET) || (b.y >= TARGET && s.y <= TARGET));
+}
+function getIntersections(s, b){
+    // segment [m-n] sur droite y=10
+    const len = getManhattanDistance(s,b)
+    log.info(' - sensor [%d,%d] len=%d',s.x, s.y, len)
+    const m = s.x - (Math.ceil(Math.sqrt(Math.pow(len,2) + Math.pow(Math.abs(s.y-TARGET), 2))));
+    const n = s.x + (Math.ceil(Math.sqrt(Math.pow(len,2) + Math.pow(Math.abs(s.y-TARGET), 2))));
+    log.info(' range [%d-%d]', m, n);
+    for (let i = m; i < n; i++) {
+        putGrid(i,1);
     }
 }
 
 function fillGrid(){
     groups.map(group => {
         const s = group.sensor;
-        putGrid(s.x, s.y, 'S');
+        //putGrid(s.x, s.y, 'S');
         const b = group.beacon;
-        putGrid(b.x, b.y, 'B');
+        //putGrid(b.x, b.y, 'B');
+        if (isCrossedLine(s, b)){
+            log.debug('>sensor %d %d,%d -> %d,%d', group.i, s.x, s.y, b.x, b.y)
+            getIntersections(s, b)
+        }
     })
 
 }
 fillGrid();
-drawGrid();
-
-function markAllRanges(){
-    groups.map(group => {
-        markRange(group)
-    })
-}
-
-function getManhattanDistance(a, b){
-    return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-}
-
-function markRange(group){
-    const s = group.sensor;
-    const b = group.beacon;
-    //draw range around sensor with #
-    const len = getManhattanDistance(s, b);
-    for (let y = -len; y <= len; y++) {
-        let r = len-Math.abs(y);
-        let from = -Math.abs(r);
-        let to = Math.abs(from);
-        for (let x = from; x <= to; x++) {
-            putGrid(s.x + x, s.y + y, '#');
-        }
-        //drawGrid();
-        //const a = 0;
-    }
-}
-markAllRanges();
-
-function drawGrid(){
-    //if (DEBUG){
-        printArray(grid, '.', true)
-    //}
-    log.info('-')
-}
-
-drawGrid();
 
 function countNoBeacon(y){
-    const count = grid[y+offset.y].filter(c => c==='#').length;
+    const count = targetLines.filter(c => c===1).length;
     log.info('@line %d = %d', y,  count)
     return count;
 }
-countNoBeacon(10);
+
+countNoBeacon(TARGET);
