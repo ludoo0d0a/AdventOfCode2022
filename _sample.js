@@ -1,4 +1,4 @@
-import { readFile, stop, sliceIntoChunks, hasDuplicates } from './io.js';
+import { readFile, stop, matrixArray } from './io.js';
 import log from 'loglevel';
 
 const DEBUG = true;
@@ -14,8 +14,9 @@ var lines = readFile(`${DAY}.txt`, SAMPLE)
 
 var groups = [];
 var total = 0;
-var group = {};
-groups.push(group)
+const rows = lines.length
+const cols = lines[0].length
+const grid = matrixArray(cols, rows, false)
 
 // Limit for test
 if (DEBUG && LIMIT>0){
@@ -25,7 +26,7 @@ if (DEBUG && LIMIT>0){
 lines.map(line => {
     if (!line) return;
     let values = line.split(' ')
-    group = {
+    const group = {
         res: values[0], 
         req: values[1]  
         //score: 0

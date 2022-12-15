@@ -83,12 +83,15 @@ export function matrixArray(width, height, defaultValue){
 function formatEl(el, defaultValue='x'){
     return (el===null || el<0 || el===false) ? defaultValue : el;
 }
-export function printArray(arr, defaultValue='.'){
+export function printArray(arr, defaultValue='.', lineNumber=false){
+    let l = 0;
     const text = arr.map(row => {
+        const n = lineNumber ? (''+l).padStart(2, '0')+' ' : '';
+        ++l;
         const line = row.map(el => {
             return formatEl(el, defaultValue);
         }).join('')
-        return line;
+        return n + line;
     }).join('\n')
     log.info(text);
 }
@@ -96,7 +99,7 @@ export function printArray(arr, defaultValue='.'){
 export function printDoubleArray(arr, arr2, defaultValue='.'){
     const text = arr.map((row, i) => {
         const line = row.map((el, j) => {
-            return formatEl(el, defaultValue) + 
+            return '' + formatEl(el, defaultValue) + 
             '(' + formatEl(arr2[i][j], defaultValue) + ')'
             ;
         }).join('')
