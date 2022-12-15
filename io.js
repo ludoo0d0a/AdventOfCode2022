@@ -35,8 +35,9 @@ export function saveFile(name, out){
     fs.writeFileSync('out/'+name, out.join('\n'))
 }
 
-export function readFile(name){
-    var content = fs.readFileSync('data/'+name, 'utf8');
+export function readFile(name, useSample){
+    const dir = useSample ? 'samples' : 'data';
+    var content = fs.readFileSync(dir+'/'+name, 'utf8');
     var lines = content.split('\n');
     return lines;
 }

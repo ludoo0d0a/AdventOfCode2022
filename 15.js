@@ -3,7 +3,7 @@ import log from 'loglevel';
 
 const DEBUG = true;
 const SAMPLE = true;
-const DAY = 0;
+const DAY = 15;
 const LIMIT = 5;
 
 log.setDefaultLevel(DEBUG?'debug':'info')
