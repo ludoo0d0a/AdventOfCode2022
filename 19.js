@@ -1,12 +1,12 @@
 import { readFile, stop, cloneObject } from './io.js';
 import log from 'loglevel';
-import { partitionSelectDependencies } from 'mathjs/lib/entry/dependenciesAny.generated.js';
 
 const DEBUG = true;
 const SAMPLE = true;
 const DAY = 19;
 const LIMIT = 5;
-const MINUTES = DEBUG ? 3 : 24; //in 24 minutes
+const LIMIT_blueprints = 1;
+const MINUTES = DEBUG ? 10 : 24; //in 24 minutes
 let minute = 1; 
 
 // response= 
@@ -16,16 +16,10 @@ const blueprints=[]
 let b={max:0}
 
 log.setDefaultLevel(DEBUG?'debug':'info')
-
 log.info(`Day ${DAY} - star 1`)
 
-var lines = readFile(`${DAY}.txt`, SAMPLE)
-
+var lines = readFile(`${DAY}.txt`, SAMPLE);
 var total = 0;
-//const rows = lines.length
-//const cols = lines[0].length
-//const grid = matrixArray(cols, rows, false)
-const tree = [];
 
 // Limit for test
 if (!SAMPLE && DEBUG && LIMIT>0){
@@ -33,12 +27,16 @@ if (!SAMPLE && DEBUG && LIMIT>0){
 }
 
 parseLines();
+if (!SAMPLE && DEBUG && LIMIT_blueprints>0){
+    blueprints=blueprints.slice(0, LIMIT_blueprints)
+}
+
 const root = {
     has: {
         ore:0,
         obsidian:0,
         clay:0,
-        geode:0
+        geode:0  // MAX
     },
     robots: {
         ore:1,
@@ -47,8 +45,14 @@ const root = {
         geode:0
     }
 };
-tagNode(root, '')
-processMinute(root, 1)
+blueprints.map((b,i) => {
+    root.bp = i; // current blueprint
+    log.info('## Blueprint %d', i)
+    tagNode(root, '')
+    b.max = processMinute(cloneObject(root), minute)
+    log.info('## Total blueprint %d : %d', i, b.max)
+})
+
 printTotal();
 
 function formatHas(node){
@@ -64,54 +68,40 @@ function formatTypes(txt, r){
             s.push(`${r[type]} ${type}`)
         }
     }
-    let msg = '-'
+    let msg = '(nothing)'
     if (s.length>0){
         msg = s.join(',')
     }
     log.debug(`  -${txt}: ${msg}`)
 }
 
-function processMinute(_node, minute){
-    log.info('Minute %d', minute);
-
-    /*
-    const has = cloneObject(prevNode.has)
-    const robots = cloneObject(prevNode.robots)
-    const node = {
-        minute,
-        path: prevNode.path, //+'-'+prevNode.action,
-        prevNode,
-        has,
-        robots
-    }*/
-    const node = _node;
-    /*
-    const node = cloneObject(_node);
-    node.prevNode=_node
-    node.minute=minute
-    */
-    
+function processMinute(node, minute){
+    log.info('Minute %d @%s', minute, node.path);
     //get production
     produce(node)
-
     //compute possible solutions (included wait)
     node.solutions = findSolutions(node)
 
     formatHas(node);
     formatRobots(node);
 
-    //tree.push(node)
     ++minute;
     // remove wait of the count
     log.info('  %d solutions with buy something', node.solutions.length-1);
     if (minute<=MINUTES){
         const len = node.solutions.length;
-        node.solutions.map((solution,i) => {
+        const geodes = node.solutions.map((solution,i) => {
             log.debug(`  >solution(${i+1}/${len}): ${solution.action}`)
-            processMinute(solution, minute)
+            return processMinute(solution, minute)
         })
+        // return max geodes of solutions
+        return geodes.sort()[0];
     }else{
         log.info('STOP');
+        if (node.has.geode>0){
+            log.info('%d geodes found', node.has.geode)
+        }
+        return node.has.geode;
     }
 }
 
@@ -128,8 +118,8 @@ function produce(node){
 
 function tagNode(node, txt){
     if (!node.path){
-        node.action = '';
-        node.path = '';
+        node.action = txt;
+        node.path = txt;
     }else{
         node.action=txt
         node.path += '-'+txt;
@@ -137,27 +127,26 @@ function tagNode(node, txt){
 }
 
 function findSolutions(node){
-    const thisNode=cloneObject(node);
-    tagNode(thisNode, 'wait');
+    const waitNode=cloneObject(node);
+    tagNode(waitNode, 'wait');
     //thisNode.path = thisNode.path+'-w';
     //const solutions = [thisNode]; //include wait (pay nothing, just wait next minute)
     const solutions = []; //include wait (pay nothing, just wait next minute)
-    blueprints.map((b,i)=>{
-        return b.items.map(item => {
-            for (const type in item.costs) {
-                if (node.has[type] >= item.costs[type]){
-                    //add this product to solution
-                    log.debug(`  [${thisNode.path}] can buy ${item.type} for ${item.costs[type]} ${type}`)
-                    const _node = cloneObject(node);
-                    tagNode(_node, `buy 1 ${item.type}`);
-                    _node.has[type]-=item.costs[type]; //pay for it
-                    ++_node.robots[item.type]; //get it
-                    solutions.push( _node );
-                }
+    const b = blueprints[node.bp]
+    b.items.map(item => {
+        for (const type in item.costs) {
+            if (node.has[type] >= item.costs[type]){
+                //add this product to solution
+                //log.debug(`  [${thisNode.path}] can buy ${item.type} for ${item.costs[type]} ${type}`)
+                const _node = cloneObject(node);
+                tagNode(_node, ` +${item.type} `);
+                _node.has[type]-=item.costs[type]; //pay for it
+                ++_node.robots[item.type]; //get it
+                solutions.push( _node );
             }
-        })
+        }
     })
-    solutions.push(thisNode); // in the end
+    solutions.push(waitNode); // in the end
     return solutions;
 }
 
@@ -213,6 +202,7 @@ function process(b, line){
 
 function printTotal(){
     // sum 
+    // the largest number of geodes you could open in 24 minutes is 9
     blueprints.map((b,i)=>{
         total += (i+1)*b.max;
     })
