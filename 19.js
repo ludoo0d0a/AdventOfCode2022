@@ -6,13 +6,13 @@ const SAMPLE = true;
 const DAY = 19;
 const LIMIT = 5;
 const LIMIT_blueprints = 1;
-const MINUTES = DEBUG ? 10 : 24; //in 24 minutes
+const MINUTES = DEBUG ? 7 : 24; //in 24 minutes
 let minute = 1; 
 
 // response= 
 // blueprint1 = 9
 // blueprint2 = 12
-const blueprints=[]
+let blueprints=[]
 let b={max:0}
 
 log.setDefaultLevel(DEBUG?'debug':'info')
@@ -27,7 +27,7 @@ if (!SAMPLE && DEBUG && LIMIT>0){
 }
 
 parseLines();
-if (!SAMPLE && DEBUG && LIMIT_blueprints>0){
+if (DEBUG && LIMIT_blueprints>0){
     blueprints=blueprints.slice(0, LIMIT_blueprints)
 }
 
@@ -47,10 +47,10 @@ const root = {
 };
 blueprints.map((b,i) => {
     root.bp = i; // current blueprint
-    log.info('## Blueprint %d', i)
+    log.info('## Blueprint %d', i+1)
     tagNode(root, '')
     b.max = processMinute(cloneObject(root), minute)
-    log.info('## Total blueprint %d : %d', i, b.max)
+    log.info('## Total blueprint %d : %d', i+1, b.max)
 })
 
 printTotal();
@@ -94,8 +94,12 @@ function processMinute(node, minute){
             log.debug(`  >solution(${i+1}/${len}): ${solution.action}`)
             return processMinute(solution, minute)
         })
+        const max = geodes.sort()[0];
+        if (max>0){
+            log.info('%d geodes found', max)
+        }
         // return max geodes of solutions
-        return geodes.sort()[0];
+        return max;
     }else{
         log.info('STOP');
         if (node.has.geode>0){
@@ -122,30 +126,51 @@ function tagNode(node, txt){
         node.path = txt;
     }else{
         node.action=txt
-        node.path += '-'+txt;
+        node.path += ' '+txt;
     }
 }
 
 function findSolutions(node){
     const waitNode=cloneObject(node);
-    tagNode(waitNode, 'wait');
+    tagNode(waitNode, '(wait)');
     //thisNode.path = thisNode.path+'-w';
     //const solutions = [thisNode]; //include wait (pay nothing, just wait next minute)
     const solutions = []; //include wait (pay nothing, just wait next minute)
     const b = blueprints[node.bp]
     b.items.map(item => {
+        let canBuy = true;
         for (const type in item.costs) {
-            if (node.has[type] >= item.costs[type]){
-                //add this product to solution
-                //log.debug(`  [${thisNode.path}] can buy ${item.type} for ${item.costs[type]} ${type}`)
-                const _node = cloneObject(node);
-                tagNode(_node, ` +${item.type} `);
-                _node.has[type]-=item.costs[type]; //pay for it
-                ++_node.robots[item.type]; //get it
-                solutions.push( _node );
+            if (node.has[type] < item.costs[type]){
+                canBuy=false; // once = stop
+                break;
             }
+            /*
+            else{
+                log.debug(`  Can partially buy robot ${item.type} for ${item.costs[type]} ${type} `);
+            }*/
         }
+
+        if (canBuy){
+            //add this product to solution
+            const _node = cloneObject(node);
+            _node.addType = item.type
+            //pay for it
+            let price = '';
+            for (const type in item.costs) {
+                _node.has[type]-=item.costs[type]; 
+                price += `+${item.costs[type]} ${type} `
+            }
+            log.debug(`  can buy robot ${item.type} for ${price}`)
+            ++_node.robots[item.type]; //get it
+            solutions.push( _node );
+        }    
+
     })
+    const len = solutions.length
+    solutions.map((sol,i) => {
+        tagNode(sol, `(+${sol.addType}__${i+1}/${len})`);
+    })
+
     solutions.push(waitNode); // in the end
     return solutions;
 }
