@@ -108,4 +108,6 @@ export function printDoubleArray(arr, arr2, defaultValue='.'){
     log.info(text);
 }
 
-
+export function cloneObject(a){
+    return Object.assign({}, a);
+}

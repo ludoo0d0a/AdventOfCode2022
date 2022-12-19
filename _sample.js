@@ -19,7 +19,7 @@ const cols = lines[0].length
 const grid = matrixArray(cols, rows, false)
 
 // Limit for test
-if (DEBUG && LIMIT>0){
+if (!SAMPLE && DEBUG && LIMIT>0){
     lines=lines.slice(0, LIMIT)
 }
 
