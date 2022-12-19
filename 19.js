@@ -33,8 +33,7 @@ if (!SAMPLE && DEBUG && LIMIT>0){
 }
 
 parseLines();
-loopMinutes({
-    path: 'a',
+const root = {
     has: {
         ore:0,
         obsidian:0,
@@ -47,7 +46,9 @@ loopMinutes({
         clay:0,
         geode:0
     }
-}, 1)
+};
+tagNode(root, '')
+processMinute(root, 1)
 printTotal();
 
 function formatHas(node){
@@ -63,48 +64,51 @@ function formatTypes(txt, r){
             s.push(`${r[type]} ${type}`)
         }
     }
+    let msg = '-'
     if (s.length>0){
-        const msg = '  -'+txt+': '+s.join(',')
-        log.debug(msg)
+        msg = s.join(',')
     }
+    log.debug(`  -${txt}: ${msg}`)
 }
 
-function loopMinutes(prevNode, minute){
+function processMinute(_node, minute){
     log.info('Minute %d', minute);
-    //formatHas(prevNode);
-    //formatRobots(prevNode);
+
+    /*
     const has = cloneObject(prevNode.has)
     const robots = cloneObject(prevNode.robots)
     const node = {
         minute,
-        path: prevNode.path+'x',
-        /*optional*/ prevNode,
+        path: prevNode.path, //+'-'+prevNode.action,
+        prevNode,
         has,
         robots
-    }
+    }*/
+    const node = _node;
+    /*
+    const node = cloneObject(_node);
+    node.prevNode=_node
+    node.minute=minute
+    */
     
     //get production
     produce(node)
 
     //compute possible solutions (included wait)
-    node.solutions = evalBlueprints(node)
+    node.solutions = findSolutions(node)
 
     formatHas(node);
     formatRobots(node);
 
-    tree.push(node)
+    //tree.push(node)
     ++minute;
     // remove wait of the count
     log.info('  %d solutions with buy something', node.solutions.length-1);
     if (minute<=MINUTES){
         const len = node.solutions.length;
         node.solutions.map((solution,i) => {
-            if (solution.action){
-                log.debug(`  >solution(${i+1}/${len}): ${solution.action}`)
-            }else{
-                log.debug(`  >solution(${i+1}/${len}): WAIT NEXT TURN`)
-            }
-            loopMinutes(solution, minute)
+            log.debug(`  >solution(${i+1}/${len}): ${solution.action}`)
+            processMinute(solution, minute)
         })
     }else{
         log.info('STOP');
@@ -122,8 +126,19 @@ function produce(node){
     }
 }
 
-function evalBlueprints(node){
+function tagNode(node, txt){
+    if (!node.path){
+        node.action = '';
+        node.path = '';
+    }else{
+        node.action=txt
+        node.path += '-'+txt;
+    }
+}
+
+function findSolutions(node){
     const thisNode=cloneObject(node);
+    tagNode(thisNode, 'wait');
     //thisNode.path = thisNode.path+'-w';
     //const solutions = [thisNode]; //include wait (pay nothing, just wait next minute)
     const solutions = []; //include wait (pay nothing, just wait next minute)
@@ -134,8 +149,7 @@ function evalBlueprints(node){
                     //add this product to solution
                     log.debug(`  [${thisNode.path}] can buy ${item.type} for ${item.costs[type]} ${type}`)
                     const _node = cloneObject(node);
-                    _node.action = `buy 1 ${item.type}`;
-                    _node.path += _node.action;
+                    tagNode(_node, `buy 1 ${item.type}`);
                     _node.has[type]-=item.costs[type]; //pay for it
                     ++_node.robots[item.type]; //get it
                     solutions.push( _node );
