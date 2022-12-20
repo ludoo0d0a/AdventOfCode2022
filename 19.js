@@ -7,7 +7,8 @@ const DAY = 19;
 const LIMIT = 5;
 const LIMIT_blueprints = 1;
 const MINUTES = DEBUG ? 7 : 24; //in 24 minutes
-let minute = 1; 
+const COLUMN = 15
+let MINUTE_START = 1; 
 
 // response= 
 // blueprint1 = 9
@@ -31,6 +32,7 @@ if (DEBUG && LIMIT_blueprints>0){
     blueprints=blueprints.slice(0, LIMIT_blueprints)
 }
 
+const types = ['ore', 'obsidian','clay','geode']
 const root = {
     has: {
         ore:0,
@@ -43,25 +45,71 @@ const root = {
         obsidian:0,
         clay:0,
         geode:0
-    }
+    },
+    minute:MINUTE_START,
+    actions: []
 };
 blueprints.map((b,i) => {
-    root.bp = i; // current blueprint
+    const _root = cloneObject(root)
+    _root.bp = i; // current blueprint
     log.info('## Blueprint %d', i+1)
-    tagNode(root, '')
-    b.max = processMinute(cloneObject(root), minute)
+    //tagNode(_root, 'start')
+    b.max = processMinute(_root, MINUTE_START)
     log.info('## Total blueprint %d : %d', i+1, b.max)
 })
 
 printTotal();
 
+function pad(txt, char=' '){
+    return txt.padEnd(COLUMN, char)
+}
+function logHistory(_node){
+    const lines = _node.actions.map(act=>{
+        const {node,action} = act;
+        return {
+            action,
+            minute: node.minute,
+            has: node.has,
+            robots: node.robots
+        }
+    })
+    const lineSeparator = pad('>>')+lines.map(line =>  pad(' ---')).join('|')
+    log.debug(lineSeparator)
+    const lineMinutes = pad('minute:')+lines.map(line =>  pad(' '+line.minute) ).join('|')
+    log.debug(lineMinutes)
+    const lineAction = pad('action:')+lines.map(line =>  pad(line.action) ).join('|')
+    log.debug(lineAction)
+
+    types.map(type=>{
+        const lineHas = pad('-'+type) + lines.map(line => pad(formatType(line.has, type), '.') ).join('|')
+        log.debug(lineHas)
+    })
+    types.map(type=>{
+        const lineRobots = pad('robot '+type)+ lines.map(line => pad(formatType(line.robots, type), '.') ).join('|')
+        log.debug(lineRobots)
+    })
+
+    const lineSeparatorEnd = pad('<<')+lines.map(line => {
+        return pad(' ---')
+    }).join('|')
+    log.debug(lineSeparatorEnd)
+    log.debug(' ')
+}
+
 function formatHas(node){
-    formatTypes('has', node.has);
+    return formatTypes(node.has);
 }
 function formatRobots(node){
-    formatTypes('robots', node.robots);
+    return formatTypes(node.robots);
 }
-function formatTypes(txt, r){
+function formatType(r, type){
+    if (r[type]>0){
+        return `${r[type]}`
+    }else{
+        return '';
+    }
+}
+function formatTypes(r){
     const s=[];
     for (const type in r) {
         if (r[type]>0){
@@ -72,18 +120,30 @@ function formatTypes(txt, r){
     if (s.length>0){
         msg = s.join(',')
     }
-    log.debug(`  -${txt}: ${msg}`)
+    return msg;
+}
+function logTypes(txt, r){
+    const s = txt + ' ' + formatTypes(r);
+    log.debug(s);
+}
+function logHas(node){
+    logTypes('has', node.has);
+}
+function logRobots(node){
+    logTypes('robots', node.robots);
 }
 
 function processMinute(node, minute){
     log.info('Minute %d @%s', minute, node.path);
+    node.minute=minute;
     //get production
     produce(node)
     //compute possible solutions (included wait)
     node.solutions = findSolutions(node)
 
-    formatHas(node);
-    formatRobots(node);
+    logHas(node);
+    logRobots(node);
+    logHistory(node);
 
     ++minute;
     // remove wait of the count
@@ -120,19 +180,25 @@ function produce(node){
     }
 }
 
-function tagNode(node, txt){
+function tagNode(node, action){
+    node.action = action;
     if (!node.path){
-        node.action = txt;
-        node.path = txt;
+        node.path = action;
     }else{
-        node.action=txt
-        node.path += ' '+txt;
+        node.path += ' '+action;
     }
+    // set actions
+    node.actions=[...node.actions]
+    node.actions.push({
+        node: cloneObject(node),
+        action,
+    });
+
 }
 
 function findSolutions(node){
-    const waitNode=cloneObject(node);
-    tagNode(waitNode, '(wait)');
+    const waitNode = cloneObject(node);
+    tagNode(waitNode, 'wait');
     //thisNode.path = thisNode.path+'-w';
     //const solutions = [thisNode]; //include wait (pay nothing, just wait next minute)
     const solutions = []; //include wait (pay nothing, just wait next minute)
@@ -160,7 +226,7 @@ function findSolutions(node){
                 _node.has[type]-=item.costs[type]; 
                 price += `+${item.costs[type]} ${type} `
             }
-            log.debug(`  can buy robot ${item.type} for ${price}`)
+            log.debug(`  __ can buy robot ${item.type} for ${price}`)
             ++_node.robots[item.type]; //get it
             solutions.push( _node );
         }    
@@ -168,7 +234,7 @@ function findSolutions(node){
     })
     const len = solutions.length
     solutions.map((sol,i) => {
-        tagNode(sol, `(+${sol.addType}__${i+1}/${len})`);
+        tagNode(sol, `+${sol.addType} ${i+1}/${len}`);
     })
 
     solutions.push(waitNode); // in the end

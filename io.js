@@ -108,6 +108,26 @@ export function printDoubleArray(arr, arr2, defaultValue='.'){
     log.info(text);
 }
 
-export function cloneObject(a){
+export function cloneSimple(a){
     return Object.assign({}, a);
 }
+
+export function cloneObject(aObject) {
+    // Prevent undefined objects
+    // if (!aObject) return aObject;
+  
+    let bObject = Array.isArray(aObject) ? [] : {};
+  
+    let value;
+    for (const key in aObject) {
+  
+      // Prevent self-references to parent object
+      // if (Object.is(aObject[key], aObject)) continue;
+      
+      value = aObject[key];
+  
+      bObject[key] = (typeof value === "object") ? cloneObject(value) : value;
+    }
+  
+    return bObject;
+  }
